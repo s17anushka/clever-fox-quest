@@ -14,6 +14,7 @@ I created this custom game specifically for my 6-year-old. The goal was to build
 *   **Magical Aesthetics:** Features a pixel-art fox, glowing gems, drifting fireflies, and a deep forest background.
 *   **Grand Finale:** Reaching 30 points triggers an interactive "You Win!" screen with continuous fireworks.
 *   **Smooth Controls:** The fox smoothly follows the mouse cursor, making it very easy for young players to control.
+*   **Mobile-Friendly & Responsive:** Playable on any device! The game automatically adjusts its size for phones, tablets, and desktop screens with smooth touch controls.
 
 ## 🎮 How to Play
 1. Look at the instructions at the top of the screen (e.g., "Catch the **BLUE** gems!").

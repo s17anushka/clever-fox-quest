@@ -52,7 +52,13 @@ const pixelScale = 5;
 
 // --- SETUP ---
 function setup() {
-  createCanvas(800, 400);
+  // FIX: Full screen size for mobile and computer
+  createCanvas(windowWidth, windowHeight);
+  
+  // FIX: Make game fast on mobile screens
+  pixelDensity(1); 
+  frameRate(60); 
+  
   noCursor();
   
   fox = new Fox();
@@ -68,7 +74,7 @@ function setup() {
 function draw() {
   drawForestBackground();
   
-  // Update and draw Fireflies (these always play)
+  // Update and draw Fireflies
   for (let f of fireflies) {
     f.update();
     f.show();
@@ -80,7 +86,12 @@ function draw() {
     winScreenLogic();
   }
 
-  // Update and draw Particles (used for both catches and fireworks)
+  // FIX: Limit particles to prevent phone from hanging
+  if (particles.length > 50) {
+    particles.splice(0, particles.length - 50);
+  }
+
+  // Update and draw Particles
   for (let i = particles.length - 1; i >= 0; i--) {
     particles[i].update();
     particles[i].show();
@@ -144,7 +155,7 @@ function playGameLogic() {
 function winScreenLogic() {
   // Draw big celebration text
   textAlign(CENTER, CENTER);
-  textSize(60);
+  textSize(min(60, width / 8)); // Responsive text size
   textFont('Arial');
   
   // Glowing text shadow
@@ -158,7 +169,7 @@ function winScreenLogic() {
   fill(r, g, b);
   text("YOU WIN!", width / 2, height / 2 - 30);
   
-  textSize(30);
+  textSize(min(30, width / 12)); // Responsive text size
   fill(255);
   text("AMAZING JOB!", width / 2, height / 2 + 20);
   
@@ -221,7 +232,7 @@ class Gem {
     this.x = x;
     this.y = y;
     this.size = gemSprite[0].length * pixelScale;
-    this.speed = random(2, 4); 
+    this.speed = random(3, 5); // FIX: Slightly faster gems
     this.colorData = random(colorOptions);
   }
 
@@ -259,7 +270,6 @@ class Particle {
   constructor(x, y, colorRGB, isGood) {
     this.x = x;
     this.y = y;
-    // Explode outward
     let angle = random(TWO_PI);
     let speed = random(1, 5);
     this.vx = cos(angle) * speed;
@@ -274,7 +284,7 @@ class Particle {
   update() {
     this.x += this.vx;
     this.y += this.vy;
-    this.life -= this.isGood ? 8 : 15; // Slower fade for good/fireworks
+    this.life -= this.isGood ? 8 : 15; 
     this.size *= 0.95;
   }
 
@@ -327,7 +337,6 @@ function createParticles(x, y, colorRGB, isGood) {
 }
 
 function createFireworks(x, y, colorRGB) {
-  // A bigger burst for the win screen
   for (let i = 0; i < 40; i++) {
     particles.push(new Particle(x, y, colorRGB, true));
   }
@@ -342,25 +351,30 @@ function drawForestBackground() {
     rect(0, y, width, 4);
   }
 
+  // Responsive Trees
   fill(10, 30, 25);
-  rect(100, height - 150, 40, 150);
-  triangle(60, height - 100, 120, height - 250, 180, height - 100);
-  triangle(70, height - 50, 120, height - 180, 170, height - 50);
+  rect(width * 0.1, height - 150, 40, 150);
+  triangle(width * 0.1 - 40, height - 100, width * 0.1 + 20, height - 250, width * 0.1 + 80, height - 100);
+  triangle(width * 0.1 - 30, height - 50, width * 0.1 + 20, height - 180, width * 0.1 + 70, height - 50);
 
-  rect(650, height - 120, 30, 120);
-  triangle(620, height - 80, 665, height - 200, 710, height - 80);
+  let rx = width * 0.85; // Right tree dynamic position
+  rect(rx, height - 120, 30, 120);
+  triangle(rx - 30, height - 80, rx + 15, height - 200, rx + 60, height - 80);
 }
 
 function drawHUD() {
   fill(255);
   noStroke();
-  textSize(24);
+  
+  // FIX: Responsive Text Sizes
+  let mobileSize = width < 500 ? 16 : 24;
+  textSize(mobileSize);
   textFont('Arial'); 
   textAlign(LEFT, TOP);
   text(`⭐ Score: ${score} / ${WIN_SCORE}`, 20, 20);
 
   textAlign(CENTER, TOP);
-  textSize(32);
+  textSize(mobileSize + 8);
   
   fill(0, 0, 0, 150);
   text(`Catch the ${targetColor.name} gems!`, width / 2 + 2, 22);
@@ -368,11 +382,11 @@ function drawHUD() {
   let c = targetColor.rgb;
   fill(c[0], c[1], c[2]);
   text(`Catch the ${targetColor.name} gems!`, width / 2, 20);
-  
-  let barWidth = 150;
-  let progress = (streak / 5) * barWidth;
 }
-// --- CONTROLS ---
+
+// --- NEW FIXES FOR MOBILE ---
+
+// Controls: Play again on Spacebar
 function keyPressed() {
   if (gameState === "won" && key === ' ') {
     gameState = "playing";
@@ -382,4 +396,15 @@ function keyPressed() {
     particles = [];
     pickNewTarget();
   }
+}
+
+// FIX: Prevents mobile screen from scrolling when swiping
+function touchMoved() {
+  return false; 
+}
+
+// FIX: Automatically resizes game if window changes or phone rotates
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
+  fox.y = height - 60; // Keep fox at the bottom
 }
